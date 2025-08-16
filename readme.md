@@ -2,8 +2,8 @@
 
 
 ## 这个资料库里有什么？
-Here is the complete set of design files, manufacturing data, source files, test results and other resources that I used in the process of building a nanovoltmeter. This process was not a coincidence, but a response to the nanovoltmeter challenge by TiN on [his website](https://xdevs.com/article/nvm_comp/)
-![Outside view](/media/IMG_0002_.jpg?raw=true)
+这里包含了整套的设计文件、制造数据、源文件、测试结果以及其他我在构建纳伏特计的过程中所使用过的资源。这一过程并非偶然，而是对TiN在[他的网站]https://xdevs.com/article/nvm_comp/)上提出的纳伏特计挑战的回应。
+![外部视图](/media/IMG_0002_.jpg?raw=true)
 
 
 ## What is a nanovoltmeter and what is it good for?
