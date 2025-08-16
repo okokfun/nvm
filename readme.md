@@ -6,42 +6,43 @@
 ![外部视图](/media/IMG_0002_.jpg?raw=true)
 
 
-## What is a nanovoltmeter and what is it good for?
-Well, a nanovoltmeter is a voltmeter that has the sensitivity, noise and stability to resolve voltages down to the nanovolt. While many multimeters do have quite sensitive low voltage ranges, the resolution (least significant digit) is usually in the order of hundreds of nanovolts - and value of this last digit is often diminished by the noise and nonlinearity of the meter. So, for proper low signal measurements, having a higher sensitivity is mandatory.
-Measurement of such low voltages is useful for many applications, for example resolving small voltage differences in various differential and bridge circuits and the measurement of very small resistances - with an appropriate current source.
-Commercial nanovoltmeters do exist, like the Keithley model 2182A or Keysight 34420A, but with a hefty price tag, so a DIY design definitely has its place.
+## 什么是纳伏特表，它有什么用？
+好吧，纳伏是一种灵敏度、噪声和稳定性都能分辨低至纳伏特的电压的电压表。虽然许多万用表确实具有相当敏感的低压范围， 分辨率(最低有效数字)通常在数百纳伏特左右，而最后一个数字的值通常会因仪表的噪声和非线性而降低。因此，对于适当的低信号测量，必须有更高的灵敏度。
+测量如此低的电压对许多应用都很有用，例如解决各种差分和桥式电路中的小电压差，以及使用适当的电流源测量非常小的电阻。
+商用纳米电压表确实存在，如Keithley Model 2182A或Keysight 34420A，但价格高昂，因此DIY设计肯定有其一席之地。
 
-## xDevs challenge
-While I have been tinkering with DIY test and measurement tools for a while now, I never had an impulse to discover the nanovolt world. Such a trigger happened on September 2nd, 2021, when TiN from xdevs site launched the [nanovolt challenge](https://xdevs.com/article/nvm_comp/). In nutshell, it called for the design of an open-source nanovoltmeter, with parameters comparable to commercial designs and a timeframe of 256 days. That is a non-trivial task, and in my case it was even more so, because I had not only never designed low signal circuits before, but had I never operated a nanovoltmeter. That is quite an unfavorable starting position and jumping into the deep end rather than dipping my toes into the problematics. To ease my mind, I waited a few days to see how others reacted on the [eevblog forum](https://www.eevblog.com/forum/metrology/nanovolt-design-challenge-build-and-show-your-own-nv-meter-in-256-days/?all). I can't say that it encouraged me.
-On the other hand, I spent a few days researching online sources and studying the service manuals of proven test gear from reputable vendors. Too bad they stopped supplying us with schematics in early 90s of the last century; but even that material was very helpful in understanding both what the requirements are for such a meter, as well as the means to achieve it.
+## XDevs 挑战
+尽管我一直在鼓捣DIY的测试和测量工具，但我从未萌生过探索纳伏特世界的冲动。这一契机发生在2021年9月2日，当时xdevs网站上的TiN发起了[纳伏特挑战](https://xdevs.com/article/nvm_comp/)。简而言之，该挑战呼吁设计一款开源纳伏特计，其参数需与商业设计相当，且需在256天内完成。这是一项非比寻常的任务，而对我而言，更是如此，因为在此之前我从未设计过低信号电路，也从未操作过纳伏特计。这确实是一个颇为不利的起始点，但我决定迎难而上，而不是浅尝辄止。为了让自己安心，我等待了几天，观察其他人在[eevblog论坛](https://www.eevblog.com/forum/metrology/nanovolt-design-challenge-build-and-show-your-own-nv-meter-in-256-days/?all)上的反应。我不敢说这完全鼓舞了我。 
+另一方面，我花了几天时间在网上查阅资料，研究知名供应商的测试设备服务手册。可惜他们在上个世纪90年代初就不再向我们提供原理图了；但即使是这些材料也非常有助于了解这种仪表的要求以及实现它的方法。
 
-## NVM design, part 1 - design requirements
-Armed with new knowledge I started dissecting the challenge requirements. 
+## NVM设计，第1部分--设计要求
+有了新的知识，我开始分析挑战要求。
 
-> Have local onboard power regulation. Single common DC (+9 to +24 VDC) or 110/220VAC mains input jack is expected.
+> 应具备机载本地电源调节功能。预计应提供单一的通用直流电源（+9至+24 VDC）或110/220VAC主电源输入接口。
 
-Okay, I think I can do this. On the other hand, any reasonable mains-powered voltmeter has to have an isolated PSU section which powers the input dividers/amplifiers and ADC, so that the measurement potential could be unrelated to the digital section with all the user and communication IO - which is needed to be earthed or somewhere close to that potential.
-This one calls for either DC or AC power, but it could be combined by having a PSU operating from an appropriate DC voltage (12V sounds like a good starting point) and attach a small AC/DC SMPS to provide power from mains.
+好吧，我想我可以做到这一点。另一方面，任何合理的市电电压表都必须有一个隔离的PSU部分，为输入分频器/放大器和ADC供电，这样测量电位就可以与所有用户和通信IO的数字部分无关--需要接地或接近该电位。
+这需要直流电或交流电，但它可以通过让一个PSU在适当的直流电压下工作(12V听起来像是一个很好的起点)并连接一个小型AC/DC SMPS来从市电中供电来结合。
 
-> Provide DC Voltage measurement ranges ±100 µV or below and include ±1V and ±10VDC range.
+> 提供±100 uV或以下的直流电压测量范围，包括±1V和±10VDC范围。
 
-This one looks innocent, but having both 10V and 100uV input on the same jacks implies either switching input amplifiers, or inserting a voltage divider into the signal path, preferably through a relay. Some older nanovoltmeters (Keithley model 181) had two different inputs - one for higher ranges, another one with low TEMF connector for sensitive ranges.
+这种方式看起来很简单，但在相同的插孔上同时输入10V和100uV意味着要么切换输入放大器，要么在信号路径中插入分压器，最好是通过继电器。一些较旧的纳米电压表(Keithley Model 181)有两个不同的输入--一个用于更高的范围，另一个带有低TEMF连接器用于敏感范围。
 
-> Have at least two user-accessible input channels for signal to be measured.
+> 至少有两个用户可访问的输入通道，用于测量信号。
 
-Oh my, another relay. Relays are good, but may introduce offset errors into signals due to thermal voltages (TEMF, short for Thermal Electromotive Force) generated on the contacts, when the relay heats up from coil power. The voltages may be around a few microvolts down to nanovolts, definitely something to consider in this design. TEMF is the main enemy of the nanovoltmeter and this acronym will be used in following text a few more times.
+哦，我的天，还有一个继电器。继电器很好，但当继电器从线圈功率中发热时，由于触点上产生的热电压(TEMF，热电动势的缩写)，可能会给信号带来偏移误差。这些电压可能在几微伏特到纳伏左右，这在设计中绝对需要考虑。
+TEMF是纳伏特计的主要敌人，这个首字母缩略词将在后面的文本中使用几次。
 
-> Have low-thermal connection interface to minimize thermal EMF parasitic errors.
+> 具有低热连接接口，以最大限度地减少热电动势寄生误差。
 
-TEMF again, I told you so.   
+再说一遍，我告诉过你。
   
-> Provide at least 5½-digit resolution for each reading.
+> 为每个读数提供至少5½位的分辨率。
 
-Sounds reasonable. I've done long-scale ADC projects like [voltmeter](https://www.eevblog.com/forum/metrology/diy-6-5-digit-voltmeter/) and [voltohmmeter](https://www.eevblog.com/forum/metrology/diy-6-digit-handheld-volohmmeter/msg2978912/#msg2978912) so perhaps I could recycle something and also bring something new to the table. I think commercial sigma-delta A-to-D converters would do the job too, but a DIY ADC definitely has more to it.
+听起来很合理。我做过一些大规模的ADC项目，比如[电压表](https://www.eevblog.com/forum/metrology/diy-6-5-digit-voltmeter/)和[伏特欧姆表](https://www.eevblog.com/forum/metrology/diy-6-digit-handheld-volohmmeter/msg2978912/#msg2978912)，所以也许我可以回收一些东西，也可以带来一些新的东西。我认为商业sigma-delta A-D转换器也可以完成这项工作，但DIY ADC肯定需要更多。
 
-> Ability to digitize input DC signal with resolution at least 10 nV and noise better than 30 nV peak to peak over at least 0.1-10 Hz bandwidth.
+> 能够在至少0.1-10 Hz的带宽下，以至少10 nV的分辨率和优于30 nV的噪声将输入直流信号数字化。
 
-More numeric requirements, nice. 30nVp-p in 10Hz bandwidth is not a very relaxed requirement - older meters like Keithley model 181 would not cut it, current models so-so.
+更多的数字要求是，10Hz带宽下的30nVP-P并不是一个非常宽松的要求--像Keithley 181型这样的老式仪表无法满足这一要求，目前的型号一般。
 
 > Have autozero functionality to correct for static offsets.
 
