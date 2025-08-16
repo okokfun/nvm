@@ -301,42 +301,43 @@ Current draw is 12W.
 
 No external equipment needed for the meter to operate.
 
-#### Cost and component availability/repairability
-Total cost of the instrument components is around 400EUR. All parts I used are off-the-shelf components or are easy to order, with the exception of the power transformer. This is DIY-ed, but I believe many custom transformer manufacturers are able to deliver such a transformer.
-Apart from that, I tried to use components with most generic footprints - like SOT23 or SOIC8 for opamps, SOT23 for transistors, most resistors do have a universal footprint able to accommodate MiniMELF (which I used because I wanted to), 1206 or 0805 resistor sizes, used a common display interface and so on. This is to help with alternative component sourcing, a hot topic in 2022, when the component crisis is influencing both professional as well as hobby electronics development and production. Despite my efforts, it's likely that some components in the BOM lists will be unavailable with usual vendors and it's hard to make future-proof designs in this respect.
+#### 成本与组件可用性/可维修性
+该仪器组件的总成本约为400欧元。我所使用的所有部件都是现成组件或易于订购的，只有电源变压器例外。该变压器是通过DIY方式制作的，但相信许多定制变压器制造商都能提供这样的变压器。
+除此之外，我尝试使用通用性较强的元件封装——例如用于运算放大器的SOT23或SOIC8封装，用于晶体管的SOT23封装，大多数电阻器都有通用的封装脚位，能够适配MiniMELF（这是我选择的原因之一），使用1206或0805尺寸的电阻器，采用通用的显示接口等等。这样做是为了便于寻找替代元件，这在2022年是一个热门话题，因为元件危机正在影响专业以及业余电子产品的开发和生产。
+尽管我尽了努力，但BOM清单中的一些组件很可能无法从常规供应商处获得，而在这方面很难设计出具有前瞻性的方案。
 
-## Future plans
-There are a few features the meter hardware is supposedly able to do, but are not implemented at the moment and I consider this a TODO list for future work on this project.
-- implement main frequency synchronous measurements. Zero-cross detector is already fitted on Marge board and ADC supports triggering by external signal, so it should be matter of firmware support.
-- implement input current compensation. All parts except a large value resistor are already on the board, so after fitting it this feature should be again a matter of firmware.
-- polish front panel user interface
-- polish the SCPI commands implementation, add more commands and full manual calibration features.
-- do more elaborate triggering, along with recording data into memory, to utilize all front panel buttons. 
-- do more exploration and testing of the ACAL feature. As it is, works fine, but I think it could do with better repeatability.
-- find lower power opamps types - this could decrease current consumption, which is always welcome in test gear.
-- provide support for GPIB. Not that I need GPIB that much, but I think exploration of GPIB could be interesting project.
+## 未来计划
+该仪表硬件理论上能够执行一些功能，但目前尚未实现，我认为这是本项目未来工作的待办事项清单。
+- 实现主要的频率同步测量。零交叉检测器已经安装在Marge板上，ADC支持由外部信号触发，因此这应该是固件支持的问题。
+- 实现输入电流补偿。除一个高阻值电阻器外，所有部件都已安装在电路板上，因此，实现这一功能将再次成为固件处理的问题。
+- 抛光前面板用户界面
+- 完善SCPI命令实现，添加更多命令，并全面引入手动校准功能。
+- 进行更复杂的触发操作，同时将数据记录到内存中，以充分利用所有前面板按钮。
+- 对ACAL功能进行更多的探索和测试。就目前而言，它工作正常，但我认为在重复性方面可以做得更好。
+- 寻找低功率运算放大器类型——这可以降低电流消耗，这在测试设备中总是受欢迎的。
+- 为GPIB提供支持。虽然我并不那么需要GPIB， 但探索GPIB可能会成为一个有趣的项目。
 
 
-## Files contained in this repository
+## 此存储库中包含的文件
 - **firmware**
-	- **FPGA** - FPGA design entry files, Lattice Diamond project
-	- **STM32** - STM32 on Marge board firmware, part of a workspace of STM32CubeIDE
+	- **FPGA** - FPGA设计导入文件，莱迪思钻石项目
+	- **STM32** - STM32在Marge板上的固件，属于STM32CubeIDE的工作空间的一部分。
 - **hardware**
-	- **PCB-design_files** - design files, one directory per board, each board is single Kicad v6 project
-	- **PCB-production_files** - gerber and BOM data, one directory per board
-	- **Schematics_pdf** - easy to read schematics in PDF format, one directory per board, plus top level interconnection diagram
-- **measurement_data** - source data of selected measurements
-- **media** - pictures and photos for this readme file.
+	- **PCB-design_files** - 设计文件，每个板对应一个目录，每个板都是一个Kicad v6项目。
+	- **PCB-production_files** - Gerber和BOM数据，每个板对应一个目录。
+	- **Schematics_pdf** - 易于阅读以PDF格式呈现的电路图，每个板对应一个目录，外加顶层互联示意图。
+- **measurement_data** - 选定测量的源数据
+- **media** - 用于此说明文件的图片和照片。
 - **mechanical**
-	- **3DP_back_panel_pcb_holder** - component to keep Lisa board on back panel. Designed as single part, needs to be printed twice, one copy mirrored. Freecad design file and STL
-	- **3DP_LNA_cover** - cover to keep LNA out of air turbulences. Designed as single part, needs to be printed twice, one copy mirrored. Freecad design file and STL
-	- **3DP_pushbutton_assembly** - transfers front panel button to mains switch actuator. Three parts, each is needed once, contains freecad design file and STL files.
-	- **3DP_reference_cover** - keeps voltage reference out of air turbulences. Two parts, each is needed once, contains freecad design file and STL files.
-	- **acryllic_display_cover** - frame of display cover to be cut from gray acryllic.
-	- **metal_parts_internal** - design files and manufacturing files for internal metal parts of the enclosure. 5 parts: four sheet metal (1mm thickness) components, one 2mm aluminium flat part. Each one is needed once.
-	- **PCB_back_panel** - back panel, designed as PCB in Kicad. I let them to manufacture it out of FR4, but alumium boards are option, too.
-	- **PCB_front_panel** - front panel, designed as PCB in Kicad. I let them to manufacture it out of FR4, but alumium boards are option, too.
-	- **PCB_side_panel** - side panel, designed as PCB in Kicad. FR4 material works, aluminium would probably too, if reflowed. Two pieces needed for enclosure.
+	- **3DP_back_panel_pcb_holder** - 组件，用于将丽莎板固定在背板。设计为单一部件，需印刷两次，其中一份需镜像。Freecad设计文件和STL文件。
+	- **3DP_LNA_cover** - 该外壳旨在防止LNA受到空气紊流的影响。设计为单一部件，需要印刷两次，其中一份需进行镜像处理。包含Freecad设计文件和STL文件。
+	- **3DP_pushbutton_assembly** - 将前面板按钮转移到主开关致动器。三个部件，每个各需一个，包含FreeCAD设计文件和STL文件。
+	- **3DP_reference_cover** - 防止空气湍流引起电压参考。两个部分包含FreeCAD设计文件和STL文件，每个部分需要一次。
+	- **acryllic_display_cover** - 显示屏盖框架采用灰色丙烯酸树脂切割。
+	- **metal_parts_internal** - 外壳内部金属零件的设计文件和制造文件。5个零件:四个钣金(厚度为1mm)部件，一个2mm铝制平板部件。每个零件需要一次。
+	- **PCB_back_panel** - 背板，在KICAD中设计为PCB。我让他们用FR4制造，但铝板也可以选择。
+	- **PCB_front_panel** - 前面板，在KICAD中设计为PCB。我让他们用FR4制造，但铝板也可以选择。
+	- **PCB_side_panel** - 在KICAD.FR4材料中设计为PCB的侧板，如果重新填充，铝可能也是如此。外壳需要两块。
 	
-## Resume
-This project was much fun and exploration, with the side effect of gaining a nanovoltmeter. I tried to make it as good as possible within a hobby budget, at the expense of not very cheap nor easy circuit. That gave me the idea of cherrypicking the good parts of this instrument, relaxing the design criteria somehow and making a new project with a significantly shorter and cheaper BOM. But that is the subject of a different project.
+## 重新开始
+这个项目充满了乐趣和探索，但也有一个副作用，那就是获得了一个纳伏特表。我试图在业余爱好的预算范围内把它做得尽可能好，代价是既不便宜也不容易电路。这让我产生了一个想法，那就是挑选这个仪器的优点，以某种方式放宽设计标准，用更短更便宜的BOM来制作一个新项目。但这是另一个项目的主题。
