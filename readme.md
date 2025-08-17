@@ -44,262 +44,266 @@ TEMF是纳伏特计的主要敌人，这个首字母缩略词将在后面的文�
 
 更多的数字要求是，10Hz带宽下的30nVP-P并不是一个非常宽松的要求--像Keithley 181型这样的老式仪表无法满足这一要求，目前的型号一般。
 
-> Have autozero functionality to correct for static offsets.
+> 具备 autozero 功能，可校正静态偏移。
 
-That is a logical requirement. I will put in some more effort by introducing autocalibration.
+这是一个合乎逻辑的要求。我将投入更多努力，引入自动校准功能。
 
-> Have galvanic isolated analog front end, with isolation resistance to earth/chassis better than 10 GΩ.
+> 具备电隔离模拟前端，隔离电阻对地/机壳的值优于10 GΩ。
 
-That is what I proposed earlier, too. 
+这也是我之前提出的建议。
 
-> Device should have ADC (any type) integrated.
+> 设备应集成ADC（任何类型）。
 
-This is likely to frame the project into standalone modus operandi.
+这很可能将该项目框定为一个独立的工作模式。
 
-> Have good long-term stability and use ovenized DC voltage reference (LM399, LTZ1000 or LTFLU with oven).
+> 具有良好的长期稳定性和使用经过预热的直流电压参考源（LM399、LTZ1000或带有预热的LTFLU）。
 
-I wouldn't think of using anything worse than an LM399 (or ADR1399) anyway.
+无论如何，我不会考虑使用比LM399（或ADR1399）更差的东西。
 
-> Provide RJ45 Ethernet and/or IEEE-488 GPIB interface for communications with external world / external equipment.
+> 提供RJ45以太网和/或IEEE-488 GPIB接口，用于与外部世界/外部设备进行通信。
 
-Fair point. USB is simpler, though.
+说得有道理。不过，USB确实更简单。
 
-> 40W total input power budget (friendly to battery operation for sensitive experiments)
+> 总输入功率为40W（适合在电池供电下进行敏感实验）。
 
-You wouldn't want your nanovoltmeter to consume more than 40W anyway. 40W is quite a bit of heat and it's not easy to dissipate it without introducing more TEMF errors.
+你肯定不希望你的纳伏特计消耗超过40W的功率。40W会产生相当多的热量，而且在不引入更多TEMF误差的情况下散发热量并非易事。
 
-> Device should be fully operational as standalone device (e.g. no debuggers or external equipment attached to make it work).
+> 该设备应能作为独立设备全面运行（例如，不应附加调试器或外部设备以使其工作）。
 
-OK, fair.
+好的，公平。
 
-After a bit of optimization, I came up with this block diagram.
-![Block diagram](/media/block.png?raw=true)
-It's basically done to fit the requirements above, with a few spicy parts I added for extra fun.
-Input from either input connection is selected via an input multiplexor. There is also a third input, to be discussed later. This MUX passes the selected channel to a low noise amplifier (LNA) to be amplified and then routed via another MUX into the main amplifier. whose output is brought to the ADC. This ADC has a nominal 10V input range, so that the basic range with LNA is 10mV (10mV x 1000 = 10V). In order to have even more sensitive ranges, the main amplifier has option to switch to x1 (pass-through), x10 and x100 gain, combined into additional 1mV and 100uV ranges. When the LNA is bypassed, the input signal is brought directly to the main amplifier, allowing for 10V, 1V and 100mV ranges, seamlessly covering 100uV to 10V input range. That would make a nanovoltmeter already, but I added two more blocks - first is easy, a low-pass filter (also known as LPF) to cut down noise, especially on sensitive ranges. Another one is an auto-calibration block, which serves to decide the gain of both amplifiers. Ideally, the meter needs only to know its onboard 7V reference voltage and can derive lower ranges automatically without calibration/adjustment and keep it precise after resistors in dividers and amplifier drift due to age or temperature.
-The entire upper portion of the circuit is held behind an isolation barrier in order to keep the input terminals separated from the power supply potential - either external DC or mains voltage. The bottom section consists mainly of the PSU and digital circuitry, including user IO and communication channels, like Ethernet and USB. For the added fun factor I also included GPIB as a low priority subproject.
+经过一点优化，我想出了这个框图。
+![框图](/media/block.png?raw=true)
+这基本上是为了满足上述要求而完成的，我添加了一些刺激性的部分以增加趣味性。
+来自两个输入连接中的任何一个的输入都是通过一个输入多路转换器来选择的。此外还有一个将在后面讨论的第三个输入。这个多路转换器将选定的通道传递给一个低噪声放大器（LNA）进行放大，然后通过另一个多路转换器再送入主放大器。主放大器的输出被送至ADC。该ADC的标称输入范围为10V，因此，在配备LNA的情况下，基本范围是10mV（10mV x 1000 = 10V）。为了获得更灵敏的范围，主放大器可以选择切换成x1（直通）、x10和x100增益模式，从而额外提供1mV和100uV的范围。
+当LNA被旁路时，输入信号被直接送入主放大器，从而能够覆盖10V、1V和100mV的量程，无缝涵盖100uV至10V的输入范围。这已然相当于一个纳伏特计了，但我又添加了两个模块——首先是简单的低通滤波器（也称为LPF），以降低噪声，尤其是在敏感量程上。另一个模块是自动校准块，用于确定两个放大器的增益。理想情况下，该仪表只需知道其板载的7V参考电压，就能自动推导出较低量程，而无需校准/调整，并且在分压器中的电阻器和放大器因老化或温度变化而漂移后仍能保持精度。
+电路的整个上部部分被置于一个隔离屏障之后，以将输入端子与电源电位（无论是外部直流电还是市电）隔离开来。下部部分主要由电源供应单元和数字电路组成，包括用户输入输出接口以及诸如以太网和USB之类的通信通道。为了增添趣味性，我还纳入了GPIB作为低优先级子项目。
 
-## NVM design, part 2 - divide and conquer
+## NVM设计，第2部分 – 分而治之
 
-Designing such an instrument, especially on a DIY base, is a lot of pingponging between mechanical and eletrical design. I could imagine how large the thing would be (say, an A4 page size as a footprint) and I knew I had to cram everything inside. Choosing a larger enclosure would give me much more freedom and other benefits (like easier dissipation of device heat, helping fight TEMF), but would be impractically large. Finding an appropriate enclosure wasn't easy - at first I thought of using G756 I used before in my [DIY SMU](https://github.com/jaromir-sukuba/J-SMU), but I preferred metal enclosures here - because of shielding from electrical interference, and with a steel enclosure even a bit of shielding from magnetic interference. Metal also helps with heat dissipation. Finally I settled on the 1EP802825 from Modushop.
-That was the right time to take a look at the electrical domain. The Earthy and floating parts (separated by an isolation barrier) have to be physically separated in sub-enclosures (that calls for two PCBs minimum) and in order to have easier debugging and modification of the circuit, I decided to separate the floating part into two PCBs. One would hold FPGA control, the reference and ADC, while another one would consist of both amplifiers and ACAL circuits. Since the enclosure is 80mm tall, there is no problem stacking at least two PCBs on top of each other, via pin headers and metric spacers.
-So, two PCBs for the floating part, one for the earthy part. The backside connectors have to be mounted somehow - here I added another PCB. The front panel pushbuttons also needed a PCB for mechanical reasons, that resulted in a total count of 5 PCBs. I named the PCBs with human names and gave them functionality:
+设计这样的仪器，尤其是在DIY基础上，需要在机械设计和电气设计之间进行大量的来回权衡。我可以想象出这个仪器会有多么庞大（比如，其占地面积大概相当于A4纸大小），同时我也知道必须尽可能地塞下所有部件。 选择更大的外壳将赋予我更大的自由度和其他好处（比如更容易散发热量，有助于抵御TEMF），但会大到不切实际。找到合适的外壳并不容易——起初我曾考虑使用我在[DIY新加坡管理大学](https://github.com/jaromir-sukuba/J-SMU)项目中用过的那款G756，但我在这里更偏好金属外壳——因为这样可以屏蔽电气干扰，而使用钢制外壳甚至还能在一定程度上屏蔽磁场干扰。金属还有助于散热。最后我选择了Modushop的1EP802825。
 
-**Bart** - I felt like this one will be tricky and there will be problems. Contains LNA, main amplifier, ACAL dividers and MUXes.  
-**Homer** - largest PCB, contains FPGA, ADC, references. Closely related to Bart.  
-**Lisa** - communication board, back panel PCB  
-**Meggie** - simplest PCB, just to hold buttons  
-**Marge** - contains PSU to feed all other PCBs, plus digital circuits.  
+那是研究电气领域的正确时机。接地部分和浮动部分（由隔离屏障隔开）必须在子外壳中物理分离（至少需要两个 PCB），为了更容易调试和修改电路，我决定将浮动部分分成两个 PCB。一个将包含 FPGA 控制、基准和 ADC，而另一个将由放大器和 ACAL 电路组成。由于外壳高 80 毫米，因此通过排针和公制垫片将至少两个 PCB 堆叠在一起没有问题。
+因此，两个 PCB 用于浮动部分，一个用于接地部分。必须以某种方式安装背面连接器 - 在这里我添加了另一个 PCB。由于机械原因，前面板按钮也需要一个 PCB，这导致总共有 5 个 PCB。我用人名命名 PCB 并赋予它们功能：
 
-With the electronics roughly separated into basic blocks, I returned to mechanical design. By the time I finished first sketches of the schematics files, I received the enclosure, so I could start with more practical details. It's much easier to visualize potential problems having the real enclosure in hand compared to studying 3D files (if any, right). For circuit separation I opted for two sheet metal sub-enclosures.
-![Internal metal parts](/media/mparts.png?raw=true). The smaller portion on right holding analog circuitry, the left portion holding earthy circuits - it's somehow shorter, to make room for a backpanel PCB.
-I designed a bunch of holes into the enclosures to allow mounting PCBs via metric spacers, and now having physical constraints, I jumped back to PCB design.
+**Bart** – 我感觉这个项目会有些棘手，而且会遇到一些问题。它包含LNA、主放大器、ACAL分频器和MUX。
+**Homer** - 最大型的PCB， 包含FPGA、ADC、参考电路。与巴特密切相关。
+**Lisa** - 通信板，后板 PCB
+**Meggie** – 最简单的PCB，仅用于放置按钮。
+**Marge** - 包含PSU，以供电给所有其他PCB以及数字电路。
+
+在粗略地将电子部分划分成基本模块后，我转而进行机械设计。当我完成电路图文件的第一版草图时，已经收到了外壳，这样我就可以着手处理更实际的细节了。与仅仅研究3D文件（如果有的话）相比，有了实际的外壳在手，更容易直观地想象潜在的问题（如果真有的话）。在电路分隔方面，我选择了两个薄金属小外壳。
+![内部金属部件](/media/mparts.png?raw=true). 右侧较小的部分容纳模拟电路，左侧较大的部分则容纳接地电路——为了留出空间给背面的PCB板，这部分设计得较短。
+我在外壳上设计了一组孔洞，以便通过公制间隔件来安装PCB，而现在由于存在物理限制，我重新回到了PCB设计阶段。
 
 
-## NVM design, part 3 - selected details of circuit operation
-In this section I'll discuss a few selected design choices of this instrument.
-#### LNA (Bart board)
-I went through a few design iterations of the LNA and it took me roughly half of the development time. I tried DC-coupled JFET amplifiers, AC coupled JFET amplifiers in chopper configuration for DC operation as well as paralleling opamps. The parallel configuration brought me the least amount of headache and despite the insane amount of components used, it is not that expensive after all. As best in class, IF3602 JFETs are both expensive and suffer by huge parameter spread, making them quite an expensive solution. There are cheaper JFETs around, but their noise parameters mean more paralleled pieces - with problems they bring, for example binning and matching. More transistors or fewer low noise types also bring more gate capacitance, requiring more circuit support to diminish its influence. Enclosing the amplifier into chopper configuration brings more issues to solve - for example I had to deal with input current and temperature gradients increasing voltage offset. It's very likely that all those problems are solvable with more time and effort and would make an LNA with lower noise and drift than what I have in the current NVM, but at some point I decided to go a different way and built the LNA out of massively parallel off-the-shelf opamp amplifier. Integrated autozero/chopper opamps do have much better temperature stability and input current, so after a bit of searching and comparing I opted for MCP6V51 from Microchip, as the one with very good price/performance ratio. Typical input noise voltage is specified at 210nV in 10Hz bandwidth and I confirmed this experimentally by building a 35 piece opamp board first. 
+## NVM设计，第3部分 - 电路操作的选定细节
+在这一节中，我将讨论该仪器的一些精选设计选择。
+#### LNA (Bart 板)
+我对LNA进行了几次设计迭代，大约花了我一半的开发时间。我尝试了直流耦合JFET放大器、直流操作用斩波器配置的交流耦合JFE放大器以及并行放大器。并行配置给我带来的头痛最小，尽管使用了疯狂数量的组件，但它毕竟没有那么贵。作为同类中最好的，IF3602 JFET既昂贵又存在巨大的参数扩散问题，这使得它们成为一个相当昂贵的解决方案。市场上有更便宜的JFET，但它们的噪声参数意味着更多的并行片段——这会带来问题，例如分仓和匹配。更多的晶体管或更少的低噪声类型也会带来更多的栅极电容，需要更多的电路支持来减少其影响。将放大器封装在斩波器配置中会带来更多问题需要解决——例如，我必须处理输入电流和温度梯度增加电压偏移的问题。很可能所有这些问题都可以用更多的时间和精力解决，并且可以制造出比我目前的NVM更低噪声和漂移的低噪声放大器，但在某个时候，我决定走另一条路，用大规模并行现成的放大器构建了低噪声微波放大器。集成的自动零/斩波开关确实有更好的温度稳定性和输入电流，所以在搜索和比较后，我选择了微芯的MCP6V51，因为它具有非常好的价格/性能比。在 10Hz 带宽下，典型的输入噪声电压指定为 210nV ，我通过首先构建一个35片放大板来实验验证了这一点。
 ![Amp35](/media/amp_t1.jpg?raw=true)
-The noise parameters were in good agreement with the datasheet values, that gave me confidence to go this way. As calculated, I need at least 50 MCP6V51s to get under 30nV p-p criteria, so I opted for 100 pieces, in 10x10 matrix, as per the schematic below
-![LNA diagram](/media/amp.PNG?raw=true)
-Each of the first stage gain blocks (with 10 amplifiers in parallel noninverting configuration) is brought to a second stage summing amplifier, and all 10 of the second stage amplifiers are summed into a third, and final, amplifier, with an overall gain of 1000.
-The last stage summing amplifier is also used to inject a voltage to null the offset voltage of LNA. The Bart board has a DAC and its amplifiers (U119 and U120) for this reason. The DAC's second channel is designed to compensate for input current - by injecting a current of opposite sign into the LNA input. I measured the uncompensated current to be around 2nA and in my current hardware the injection resistor isn't fitted on the board. By using this feature, I expect a current well below 100pA.
-The LNA injects ground current into the ground net of the circuit, and the current is dependent on input voltage (and therefore output voltage, too). Ground current may cause unwanted voltage shifts between ground potentials of the circuit, especially at high gains. To counteract this ground current, amplifier with U121 is set up to source current of opposite polarity into the ground, into areas where the LNA resides.
-The Bart board is 4-layer, with internal layers being ground nets, for both electrical and thermal reasons.
-
+这些噪声参数与数据表中的值相符，这使我有了继续前行的信心。根据计算，我需要至少50个MCP6V51器件才能达到30nV p-p的标准，因此我决定选用100个器件，以10x10的矩阵排列，如图所示。
+![LNA 图表](/media/amp.PNG?raw=true)
+第一阶段增益块（由10个并联的非反相放大器组成）中的每一个都被送入第二阶段的求和放大器，而所有10个第二阶段的放大器则被求和，以形成一个第三级、也是最终的放大器，其整体增益为1000。
+最后一个级联放大器还被用于注入一个电压，以抵消LNA的偏移电压。 巴特电路板上设有DAC及其放大器（U119和U120）就是为了这个目的。DAC的第二通道被设计用于补偿输入电流——通过向LNA输入注入相反方向的电流。我测量的未补偿电流约为2纳安，而在我当前的硬件中，注入电阻器并未被安装在电路板上。通过利用这一特性，我预计电流将远低于100pA。
+LNA会将地电流注入电路的接地网络中，而该电流取决于输入电压（进而也影响输出电压）。
+地电流可能导致电路的地电位之间出现不必要的电压偏移，尤其是在高增益情况下。为了抵消这种地电流，使用 U121 设计的放大器被设置成向地端注入相反极性的电流，注入区域即为 LNA 所驻留的地方。
+巴特板有四层结构，内部层为接地网，这既出于电气考虑，也出于热管理考虑。
 #### ADC (Homer board)
-The ADC is of the integrating, charge balancing type with residual integrator voltage reading. SN74LV4053 is used for integrator current steering, the integrator is of the classic two opamp composite type. The FPGA does multiple jobs here, apart from orchestrating actions around the ADC, it also provides an interface between isolated serial link and multiple digital outputs used to switch relays, multiplexer and analog filter and does startup timing for smooth PSU startup.
-I measured INL of ADC against a Solartron 7081 as reference. A 0-10V voltage sweep was provided by a DIY precision voltage source (LTZ1000A reference, AD5791B DAC). Measured INL graph:
-![ADC INL graph](/media/lina.png?raw=true)
-The INL of this magnitude may not be obviously needed for this application, but I wanted to employ ACAL functionality, where voltage transfer between ranges expects good INL of the ADC, so I was after good linearity and spent some time honing it.
+该ADC属于积分型、电荷平衡类型，带有剩余积分器电压读数。
+SN74LV4053 用于积分器电流控制，该积分器属于经典的由两个运算放大器组成的复合类型。FPGA 在这里承担了多项任务，除了协调 ADC 周边操作外，它还提供了隔离串行链路与用于切换继电器、多路复用器及模拟滤波器的多个数字输出之间的接口，并负责启动时序以确保 PSU 的平稳启动。
+我根据 Solartron 7081 测量了 ADC 的 INL 作为参考。0-10V 电压扫描由 DIY 精密电压源（LTZ1000A基准电压源，AD5791B DAC）提供。实测INL图：
+![ADC INL 图表](/media/lina.png?raw=true)
+如此程度的INL可能在这个应用中并非绝对必要，但我希望利用ACAL功能，而该功能在两个量程间的电压转换方面对ADC的INL有较高要求，因此我致力于追求良好的线性度，并花了一些时间进行优化。
 
-#### PSU (Marge board)
-My first idea for the PSU was to use two back-to-back 50Hz transformers. One would provide a few volts (providing first isolation barrier and ground reference) and the second would step it up to the level appropriate for +-16V and 5V DC outputs. Later I expended this idea by using an audio frequency amplifier circuit to feed the second transformer and omitting the first transformer. Using an AF amplifier (fed by an appropriate oscillator) to drive the transformer has a few advantages - the whole circuit could be powered from a single DC voltage and the oscillation frequency can be adjusted to find a good compromise between leakage and efficiency. Using classic linear amplifiers would bring way too much thermal dissipation into the enclosure, so I opted for the cheap and plentiful TPS3116 D-class amplifier. The oscillator signal - either from a local single opamp multivibrator or amplified signal provided by the MCU - is shaped by a series of lowpass filters, so that the amplifier is fed by a low harmonic content signal. Transformer secondary is brought to a fairly standard set of regulators - LM317/337 and 7805.
-I measured ground leakage from the isolated PSU section and its efficiency as function of driving frequency.
-![PSU graph](/media/psu-freq.PNG?raw=true)
-As per expectations, a lower frequency also brings lower leakage current, but going too low causes efficiency to plummet at some point. I opted for 48Hz, where I measured leakage well below 200nA p-p. At this level, leakage measurement is very sensitive to nearby electric fields and conducted interference. After enclosing the test setup in a shielded box, the measured leakage fell to 40nA p-p, indicating the previous measurement was too pessimistic. I believe even the 40nA figure is pessimistic still and influenced by the shielding setup and the oscilloscope I used. For proper test results I'd need a larger shielded cage and a battery powered oscilloscope, but I didn't want to go that far.
-The PSU design brought interesting detail to the game. In case of overload, TPS3116 will turn off the load drive. That sounds innocent, but may be problemtic in this case - because after powerup the reference is cold, so the heater takes a significant amount of current during powerup. To add insult to injury, all decoupling/bulk capacitors are discharged, even more increasing the powerup current spike. The spike causes TPS3116 to shut down for a moment, then it tries to restart the load, ending up in the same large spike, repeating again and again.
-To mitigate this issue, two fixes were made:
- - PSU driving starts from higher frequency, slowly (over course of a few seconds) it descends to the final 48Hz value. Voltage on the isolated secondary ramps up much slower, allowing circuits to power up smoothly.  
- - Voltage reference heating current (large current spike when left untreated) and LNA power supply voltage is held off until 10 seconds after FPGA power gets stable, at which point heater current is enbled, and LNA power turns on two seconds later.
+#### PSU (Marge 板)
+我对PSU的第一个想法是使用两个背靠背的 50Hz 变压器。一个将提供几个伏特（提供第一隔离屏障和接地基准），第二个将将其提升到适合+-16V和5V直流输出的水平。后来我用一个音频放大器电路来输入第二个变压器，省略第一个变压器。使用AF放大器（由适当的振荡器供电）来驱动变压器有几个优点——整个电路可以由单个直流电压供电，并且振荡频率可以调整，以在泄漏和效率之间找到一个很好的折衷。使用传统的线性放大器会给外壳带来太多的热损耗，所以我选择了便宜且容量丰富的TPS3116 D级放大器。振荡器信号——可以来自本地单个放大倍频振荡器或由MCU提供的放大信号——由一系列低通滤波器塑形，以便放大器接收低谐波含量的信号。
+二次变压器被带到一个相当标准的稳压器组-LM317/337和7805。
+我测量了隔离PSU段的地漏及其效率与驱动频率的函数关系。
+![PSU 图表](/media/psu-freq.PNG?raw=true)
+正如预期的那样，较低的频率也会带来较低的泄漏电流，但频率过低会导致效率在某些点上急剧下降。我选择了48Hz，在此频率下测量的泄漏电流远低于200nA p-p。在这个水平上，泄漏测量对附近的电场和传导干扰非常敏感。将测试装置封装在屏蔽盒中后，测量的泄漏电流降至40nA p-p，这表明之前的测量过于悲观了。我认为即使是40nA这个数字也过于悲观，并受到了屏蔽设置和我所使用的示波器的限制。为了获得更准确的测试结果，我可能需要一个更大的屏蔽笼以及一台电池供电的示波器，但我不想在这方面投入过多资源。
+PSU设计为游戏带来了有趣的细节。在过载情况下，TPS3116将关闭负载驱动器。这听上去似乎无害，但在这种情况下可能是个问题——因为在通电后，参考信号是冷的，因此加热器在通电期间会消耗大量电流。雪上加霜的是，所有去耦/大容量电容器都被放电，进一步增加了通电时的电流峰值。这个峰值导致TPS3116短暂关闭，然后试图重新启动负载，结果导致同样的巨大峰值，周而复始。
+为了缓解这个问题，我们做了两个修复:
+ - PSU驱动从较高频率开始，然后逐渐（在数秒时间内）下降至最终的48Hz值。隔离次级电压的上升速度要慢得多，从而确保电路能够平稳启动。
+ - 电压参考加热电流（在未处理的情况下会产生大电流峰值）以及LNA电源电压将被保持，直到FPGA电源稳定后的10秒后，届时加热电流将被激活，而LNA电源将在两秒后开启。
 
-## Mechanical parts
-While the enclosure is centered around the Modushop enclosure, a few more mechanical parts were needed.
+## 机械部件
+虽然该外壳以Modushop外壳为中心，但还需要几个额外的机械部件。
 
-#### Reference cover
-This two-part 3D printed component prevents airflows around ADR1399 reference, decreasing its noise somehow.
+#### 参考封面
+这个由两部分组成的3D打印组件能够防止空气在ADR1399参考器件周围流动，从而在某种程度上降低其噪音。
 ![Ref cover](/media/refcover.jpg?raw=true)
 ![Ref cover](/media/refcover2.jpg?raw=true)
 
-#### Lisa board holder
-This 3D printed component keeps Lisa board in its place on back panel.
+#### 丽莎板架
+这个3D打印部件使丽莎板保持在背板上的正确位置。这个3D打印部件使丽莎板保持在背板上的正确位置。
 ![Back holder](/media/backpcb.jpg?raw=true)
 ![Back panel](/media/backpanel.jpg?raw=true)
 
 #### LNA cover
-This 3D printed component provides insulation of LNA board area from airflows.
+这个3D打印组件提供了LNA板区域与气流之间的绝缘。
 ![LNA cover](/media/lnacover.jpg?raw=true)
 ![LNA cover 2](/media/lnacover2.jpg?raw=true)
-The amount of influence on the readings was suprising to me. Here are two graphs of the shorted input measurement, one with cover, one without, the RMS noise voltage is nearly twofold for naked LNA.
-![LNA cover graph](/media/lnacover_graph.PNG?raw=true)
+这种读数上的影响程度出乎我的意料。这里有两幅短波输入测量的图表，一幅有盖，一幅没有盖，裸露的LNA的均方根噪声电压几乎是两倍之高。
+![LNA cover 图表](/media/lnacover_graph.PNG?raw=true)
 
 #### Side PCB
-The original modushop enclosure fitted the outer enclosure panel by screwing to side metal sheets by self tapping screws. I didn't like this, so I drilled the original holes for self-tappers into 3,5mm diameter and mounted dedicated mechanical PCB with nothing but holes and copper plane to solder M3 nuts. This PCB keeps the internal chassis and outer shields in single piece. I think this part would be somehow better made out of >3mm thick aluminium of the same size, with drilled and tapped holes, but PCB seems to work fine for now.
+原始的模度商店外壳是通过自攻螺钉固定在外壳侧金属片上的。我不喜欢这种方式，因此我在原始孔位上钻了直径为3.5毫米的孔，并安装了一个专门的机械PCB，上面除了孔和铜箔平面外别无他物，以便焊接M3螺母。这个PCB将内部底盘和外护板保持在同一块板上。我认为，如果用同样尺寸的厚度大于3毫米的铝材制成，并在其上钻出和攻出相应孔位，那么这个部件的做工应该会更好，但就目前而言，这个PCB似乎也能正常工作。
 ![Side PCB](/media/bok2.jpg?raw=true)
 
-#### Push button rod
-This is three piece 3D printed component to extend main switch shaft to front panel.  
-TODO pictures.
+#### 推按钮杆
+这是一个由三部分组成的3D打印组件，用于将主开关轴延伸至前面板。
+待处理图片。
 
-#### Front panel construction
-Display cover is epoxied into the front panel cutout, display is bolted to Meggie board and this board is bolted the to font panel.
-TODO picture of perspex cutout
-![Enclosure with metal parts](/media/frontpcb.jpg?raw=true)
+#### 前面板结构
+显示屏盖被环氧树脂固定在前面板的切口中，显示屏则通过螺栓固定在梅吉板上，而该板又被螺栓固定在正面面板上。
+透明塑料切割图的待办事项
+![带有金属部件的附件](/media/frontpcb.jpg?raw=true)
 
-#### Internal construction details
-![Enclosure with metal parts](/media/enc_1.jpg?raw=true)
-Complete internal construction without top cover
-![Covers](/media/covers.jpg?raw=true)
-Dump of construction photographs is in imgur gallery [here](https://imgur.com/a/fnK1Evj)
+#### 内部构造细节
+![带有金属部件的附件](/media/enc_1.jpg?raw=true)
+无需顶盖即可完成内部结构。
+![覆盖](/media/covers.jpg?raw=true)
+施工照片的集锦在Imgur画廊中。 [这里](https://imgur.com/a/fnK1Evj)
 
-## NVM usage
-#### Local interface
-![Front panel](/media/fpanel.png?raw=true)
-13 keys are provided for instrument operation, plus 2-line by 20 characters vacuum fluorescent display.
-After startup the meter enters default (measurement) mode, with settings read from EEPROM. Typical display layout:
-![Display example](/media/disp.png?raw=true)
-The first line displays measured voltage and range in obvious way.  
-Second line in this example indicates following states:  
-CH1 - selected channel 1. Could be either 1 or 2.  
-Z0 - zero function (see below) is not active on this range. Could be either 0 or 1.  
-10NPLC - ADC integration time in powerline cycle multiplies. Could be either 1, 2, 5, 10 or 20.  
-ETH1 - Ethernet is connected and IP address provided via DHCP. Could be either 0 or 1.  
+## NVM 使用
+#### 本地接口
+![前方面板](/media/fpanel.png?raw=true)
+13个按键用于仪器操作，外加2行共20个字符的真空荧光显示屏。
+启动后，仪表进入默认（测量）模式，从 EEPROM 读取设置。典型显示布局：
+![显示例子](/media/disp.png?raw=true)
+第一行以明显的方式显示测量的电压和范围。
+此示例中的第二行表示以下状态：
+CH1 - 选定的通道1。可以是1或2。
+Z0 - 零函数（见下文）在此范围内未激活。可能为0或1。
+10NPLC - 在电源线周期内进行ADC整合的时间倍增。可以是1、2、5、10或20。
+ETH1 - 已连接以太网，并通过DHCP提供IP地址。可以是0或1。
 
-Buttons functions:  
-**INPUT** - by clicking this button, the instrument toggles between Input 1 and Input 2 on the 4-pin LEMO connector.  
-**ZERO** - this function enables zeroing measured value (by subtracting constant voltage offset measured at the instant of enabling the function). Each range has its offset value and is independent of other ranges. Zeroing for given range is disabled by second button press.  
-**FILT** - pressing this button displays analog filter, digital filter and NPLC settings. Each hit of the button moves focus to next setting (value is changed by pressing UP/DOWN controls), third hit returns to default measurement display.  
-**ACAL** - pressing this button starts ACAL procedure and saves the calibration constants into EEPROM memory.  
-**TRIG** - not used in this firmware revision.  
-**STORE** - not used in this firmware revision.  
-**RECALL** - not used in this firmware revision.  
-**MENU** - enables menu. Moving across menu items is done by pressing UP and DOWN keys. Enter enables editing the item value - editing is performed using UP and DOWN keys. Escaping from the menu is possible via ESC button, saving and escaping via MENU button.  
-**AUTO** - not used in this firmware revision.  
-**ENTER** - apart from function in menu function, pressing ENTER in default mode displays IP address of the instrument (if attached to ethernet). Pressing ENTER again returns back to default state.  
-**UP/DOWN** - in menu or filter editing it serves function described above, in default mode it selects higher or lower measurement range.  
+按钮功能:  
+**输入** – 通过点击此按钮，该仪器会在4引脚LEMO连接器上的输入1和输入2之间切换。
+**ZERO** – 该功能可实现测量值的归零（通过减去在启用该功能时测得的恒定电压偏移值）。每个量程都有其偏移值，且与其他量程的偏移值无关。按下第二个按钮可禁用指定量程的归零功能。
+**FILT** - 按下此按钮可显示模拟滤波器、数字滤波器和 NPLC 设置。按钮的每次点击都会将焦点移动到下一个设置（通过按 UP/DOWN 控件更改值），第三次点击返回默认测量显示。 
+**ACAL** - 按下此按钮将启动ACAL程序，并将校准常数保存到EEPROM存储器中。
+**TRIG** - 本固件版本中未使用。
+**STORE** - 本固件版本中未使用。
+**RECALL** - 本固件版本中未使用。
+**菜单** - 启用菜单。通过按下上箭头和下箭头键可在菜单项之间移动。输入用于编辑项值 - 编辑操作通过上箭头和下箭头键完成。通过 ESC 键可以退出菜单，通过 MENU 键可以保存并退出。
+**AUTO** - 本固件版本中未使用。. 
+**ENTER** - 除了在菜单功能中的功能外，在默认模式下按下 ENTER 键将显示仪器的 IP 地址（如果已连接到以太网）。再次按下 ENTER 键则返回默认状态。
+**UP/DOWN** - 在菜单或筛选编辑中，它发挥着上述描述的功能，在默认模式下，它会选择更高或更低的测量范围。 
 
-#### Remote interface
-Instrument could be controlled remotely via ethernet interface, by issuing SCPI-compatible commands.  
-\*IDN? - returns instrument identification  
-\*RST - resets instrument  
-\*CLS - clear status  
-SYSTem:ERRor[:NEXT] - lists system error  
-SYSTem:ERRor:COUNt? - return amount of system errors  
-SYSTem:VERSion? - returns instrument version string  
-MEASure:VOLTage? - returns value of measured voltage  
-CALibration:VREF - single float parameter, sets value of 7V reference voltage (the only input for ACAL procedure)  
-CALibration:VREF? - returns value of 7V reference voltage  
-CALibration:UNLock - single integer parameter, locks (0) or unlocks (1) access to calibration EEPROM  
-CALibration:SAVe - if access to calibration EEPROM is unlocked, this command saves actual calibration into EEPROM  
-CALibration:ACAL - starts ACAL procedure  
-SENSe:CHANnel - single integer parameter, sets channel 1 or 2  
-SENSe:CHANnel? - returns actual channel number  
-SENSe:RANGe - single integer parameter, sets range 1 (100uV) to 6 (10V)  
-SENSe:RANGe? - returns actual range number  
-SENSe:DFILter - single integer parameter, sets digital filter to 1, 2, 4, 8, 16, 32 or 64 samples  
-SENSe:DFILter? - returns digital filter setting  
-SENSe:AFILter - single integer parameter, sets analog filter off (0) or on (1)  
-SENSe:AFILter? - returns analog filter setting  
-SENSe:DIGits - single integer parameter, sets nubmer of displayed digits - 3 to 6  
-SENSe:DIGits? - returns nubmer of displayed digits  
-SENSe:NPLC - single integer parameter, sets ADC integration period in NPLC cycles to 1NPLC (0), or 2NPLC (1), or 5NPLC (2), or 10NPLC (3), or 20NPLC (4)  
-SENSe:NPLC? - returns ADC integration period  
-SENSe:AZero - single integer parameter, sets ADC autozero off (0) or on (1)  
-SENSe:AZero? - return ADC autozero setting  
-SYSTem:BEEPer - single integer parameter, sets beeper off (0) or on (1)  
-SYSTem:BEEPer? - return beeper state  
+#### 远程接口
+通过以太网接口，通过发出与SCPI兼容的命令，可以实现对仪器的远程控制。
+\*IDN? - 返回仪器识别码
+\*RST - 重置仪器  
+\*CLS - 清除状态  
+SYSTem:ERRor[:NEXT] - 系统错误列表
+SYSTem:ERRor:COUNt? - 返回系统错误的数量。
+SYSTem:VERSion? - 返回工具版本字符串
+MEASure:VOLTage? - 返回所测电压的值。
+CALibration:VREF - 单个浮点参数，设定7V参考电压值（这是ACAL流程的唯一输入）。
+CALibration:VREF? - 返回7V参考电压的值。
+CALibration:UNLock - 单个整数值参数，用于锁定（0）或解锁（1）对校准EEPROM的访问。
+CALibration:SAVe - 如果对校准EEPROM的访问被解锁，此命令会将实际的校准数据保存到EEPROM中。
+CALibration:ACAL - 启动ACAL过程  
+SENSe:CHANnel - 单个整数值参数，用于设置通道 1 或 2。
+SENSe:CHANnel? - 返回实际的通道号。
+SENSe:RANGe - 单整数参数，设定范围 1（100uV）至 6（10V）。
+SENSe:RANGe? - 返回实际范围编号。
+SENSe:DFILter - 单个整数值参数，用于将数字滤波器设置为1、2、4、8、16、32或64个样本。
+SENSe:DFILter? - 返回数字滤波器设置
+SENSe:AFILter - 单个整数值参数，用于设置模拟滤波器是否开启（0）或关闭（1）。
+SENSe:AFILter? - 返回模拟滤波器设置
+SENSe:DIGits - 单整数参数，用于设置显示的位数 - 3 到 6
+SENSe:DIGits? - 返回显示的位数。
+SENSe:NPLC - 单个整数值参数，用于将 NPLC 周期内的 ADC 积分周期设置为 1NPLC(0)、2 NPLC(1)、5NPLC (2)、10NPLC(3)或 20NPLC(4)。
+SENSe:NPLC? - 返回ADC积分周期。  
+SENSe:AZero - 单个整数值参数，用于设置ADC自动归零功能（0表示关闭，1表示开启）。
+SENSe:AZero? - 返回ADC自动归零设置。
+SYSTem:BEEPer - 单个整数值参数，用于设置蜂音器关闭（0）或开启（1）。
+SYSTem:BEEPer? - 返回蜂音器状态
 
-NVM is fully calibrated by ACAL feature. For this it needs to have its reference voltage setup in calibration memory before running ACAL function. The value is accessible only through remote interface and its CALibration:VREF command. If the reference value in calibration memory is outside 6,95-7,3V range, default value 7,05V is assumed. At the moment, individual range calibration isn't supported, but probably will be in future firmware revisions.
+NVM完全通过ACAL功能进行了校准。为此，在运行ACAL功能之前，需要在校准内存中设置其参考电压。该值只能通过远程接口及其“CALibration:VREF”命令访问。如果校准内存中的参考值超出6.95-7.3V的范围，将默认为7.05V。目前，单独的区间校准功能尚不支持，但未来固件更新中可能会加入这一功能。.
 
-## NVM project goals
-In this section I'll discuss the performance of this instrument and project goals. 
-#### Noise
-The main criteria of this project was to achieve low noise at the lowest voltage range. In order to assess this, I logged 20 seconds of shorted input measurements at 100uV range, with no autozero, 2NPLC (integration time 40ms) and 10Hz analog filter on.
+## NVM项目目标
+在此部分中，我将讨论此仪器的性能以及项目目标。
+#### 噪声
+该项目的主要标准是在最低电压范围内实现低噪声。为了评估这一点，我记录了下述条件下的20秒短路输入测量值：100uV范围，无自动归零功能，2NPLC（积分时间40mS）和10Hz模拟滤波器。
 ![Noise graph](/media/noise.png?raw=true)
-The noise is below 25nV p-p.
-#### Stability
-I recorded roughly 9 hours worth of data with shorted input, while logging ambient temperature too. Meter set to 10NPLC, autozero on, analog filter on. I separated the data into 64 seconds long chunks, averaged it and used as data points. I tried to control the room temperature to obtain some variation.
+噪声低于25nV p-p。
+#### 稳定性
+我大致记录了9个小时的数据，采用了短采样输入，同时记录了环境温度。仪表设定为10NPLC，自动归零已开启，模拟滤波器已打开。我将数据分割成每段64秒长的小块，进行平均处理后用作数据点。我尝试控制房间温度以获得一些变化。
 ![Longer noise graph](/media/lnoise.png?raw=true)
-There is no clear temperature dependency. I read the data as sensitivity to temperature changes is perhaps more prominent than the tempco of the instrument.
-#### Linearity
-I measured the same INL of the NVM against Keithley 2010 as reference meter.
+没有明确的温度依赖性。我解读的数据表明，对温度变化的敏感度可能比仪器的温度系数更为显著。
+#### 线性
+我使用Keithley 2010作为参考仪表，测得了相同的NVM INL值。
 ![NVM INL graph](/media/linn.png?raw=true)
-I believe it lies within acceptable margin for 6,5 digit meter.
-#### Bandwidth and normal mode rejection
-I measured ADC transfer function for sine input with 1Vp-p amplitude, stepped from 1Hz to 80Hz. Meter was set to 2NPLC, no autozero, analog filter on, 10V range.
+我相信这处于6,5位数仪器的可接受范围内。
+#### 带宽和正常模式抑制
+我测量了ADC转换函数，输入信号为幅度为1Vp-p的正弦波，采样频率从1Hz逐渐提升至80Hz。仪表设置为2NPLC，无自动归零功能，模拟滤波器开启，量程为10V。
 ![Frequency response graph](/media/freq.png?raw=true)
-Resulting bandwidth for -3dB is between 9 and 10Hz, normal mode rejection for 25, 50 and 75Hz is around -90dB
-#### Stepping the input with various voltages from Keithley 260 voltage source
-Meter set to 20NPLC, autozero on, analog filter on, digital filter=2, 100uV range. Stepping in 10uV steps. The source has undergone massive repair and is out of calibration - but served well as test source to assess linearity and stability of NVM.
+相应的 -3dB 带宽在 9 到 10Hz 之间，正常模式抑制在 25Hz、50Hz 和 75Hz 处约为 -90dB。
+#### 使用Keithley 260电压源提供各种电压作为输入。
+量程设定为 20NPLC，自动归零已开启，模拟滤波器已开启，数字滤波器=2，量程为 100uV，步长为 10uV。该源已进行大规模修复，但已失去校准——不过作为测试源来评估 NVM 的线性度和稳定性表现良好。
 ![10uV steps graph](/media/steps10uv.PNG?raw=true)
-And similarly for 1uV steps. Note that 10uV step is missing, due to bad contact or resistor on Keithley 260 source.
+同样适用于1uV的步长。请注意，由于Keithley 260源上的接触不良或电阻问题，缺少10uV的步长。
 ![10uV steps graph](/media/steps1uv.PNG?raw=true)
-#### Response to 10uV input step with various digital filter settings
-Meter set to 20NPLC, autozero on, analog filter on, 100uV range. K260 induces 10uV step on input terminals, response time with various digital filter settings is observed.
+#### 响应10uV输入阶梯信号，并调整不同的数字滤波器设置。
+仪表设置为20NPLC，自动零点开启，模拟滤波器开启，100uV范围。K260在输入端诱发10uV阶跃，观察不同数字滤波器设置下的响应时间。
 ![10uV steps graph](/media/dfilter.PNG?raw=true)
-Response is very typical for boxcar average used as digital filter here.
+在这里，作为数字滤波器使用的箱式平均响应非常典型。.
 
-#### Contest goals accomplishment
-Now returning back to the contest call:
+#### 竞赛目标的实现。
+现在回到比赛电话：
 
-> Have local onboard power regulation. Single common DC (+9 to +24 VDC) or 110/220VAC mains input jack is expected.
+> 应具备机载本地电源调节功能。预计应提供单一的通用直流电源（+9至+24 VDC）或110/220VAC主电源输入接口。
 
-Yes, it works on both DC 12V and 230VAC sources.
+是的，它既适用于DC 12V电源，也适用于230VAC电源。
 
-> Provide DC Voltage measurement ranges ±100 µV or below and include ±1V and ±10VDC range.
+> 提供直流电压测量范围 ±100 uV或以下，并包含 ±1V 和 ±10VDC 范围。
 
-Yes, input ranges are bipolar 100uV, 1mV, 10mV, 100mV, 1V and 10V.
+是的，输入范围是双极性的：100uV、1mV、10mV、100mV、1V和10V。
 
-> Have at least two user-accessible input channels for signal to be measured.
-> Have low-thermal connection interface to minimize thermal EMF parasitic errors.
+> 至少应有两个用户可访问的输入通道，用于测量信号。
+> 拥有低热连接接口，以最大限度地减少热电磁干扰寄生误差。
 
-Yes, two inputs with reasonably low TEMF LEMO connector.
+是的，两个输入配有相当低端的TEMF LEMO连接器。
 
-> Provide at least 5½-digit resolution for each reading.
+> 为每个读数提供至少5½位的分辨率。
 
-6,5digit provided.
+6,5位数字已提供。
 
-> Ability to digitize input DC signal with resolution at least 10 nV and noise better than 30 nV peak to peak over at least 0.1-10 Hz bandwidth.
+> 能够将输入直流信号数字化，分辨率至少为10nV，在至少0.1-10Hz的带宽内噪声小于30nV p-p 值。
 
-On lowest range and 6,5 digit readout the resolution is 100pV and noise in 10Hz bandwidth is ~20-25nV p-p.
+在最低量程和6,5位读数时，分辨力为100pV，10Hz带宽内的噪声约为20-25nV p-p 值。
 
-> Have autozero functionality to correct for static offsets.
+> 具备 autozero 功能，可校正静态偏移。
 
-Yes, autozero and autocalibration provided.
+是的，提供自动归零和自动校准功能。
 
-> Have galvanic isolated analog front end, with isolation resistance to earth/chassis better than 10 GΩ.
+> 具备电隔离模拟前端，隔离电阻对地/机壳的值优于10 GΩ。
 
-Analog portion is isolated. Common mode current is apparently below 100nA p-p.
+模拟部分被隔离。共模电流显然低于100nA p-p。
 
-> Device should have ADC (any type) integrated.
+> 设备应集成ADC（任何类型）。
 
-I used my own integrating multislope ADC design.
+我使用了自己设计的集成多斜波ADC设计。
 
-> Have good long-term stability and use ovenized DC voltage reference (LM399, LTZ1000 or LTFLU with oven).
+> 具有良好的长期稳定性和使用经过预热的直流电压参考源（LM399、LTZ1000或带有预热的LTFLU）。
 
-I used ADR1399. Can't assess long-term stability by now.
+我使用了ADR1399。目前还无法评估其长期稳定性。
 
-> Provide RJ45 Ethernet and/or IEEE-488 GPIB interface for communications with external world / external equipment.
+> 提供RJ45以太网和/或IEEE-488 GPIB接口，用于与外部世界/外部设备进行通信。
 
-RJ45 Ethernet provided, hardware ready for GPIB, too. Apart from that, USB interface is available on board.
+RJ45以太网接口已提供，硬件也做好了与GPIB的对接准备。除此之外，板载还设有USB接口。
 
-> 40W total input power budget (friendly to battery operation for sensitive experiments)
+> 总输入功率为40W（适合在电池供电下进行敏感实验）。
 
-Current draw is 12W.
+当前耗电量为12W。
 
-> Device should be fully operational as standalone device (e.g. no debuggers or external equipment attached to make it work).
+> 该设备应能作为独立设备全面运行（例如，不应附加调试器或外部设备以使其工作）。
 
-No external equipment needed for the meter to operate.
+该仪表无需任何外部设备即可运行。
 
 #### 成本与组件可用性/可维修性
 该仪器组件的总成本约为400欧元。我所使用的所有部件都是现成组件或易于订购的，只有电源变压器例外。该变压器是通过DIY方式制作的，但相信许多定制变压器制造商都能提供这样的变压器。
